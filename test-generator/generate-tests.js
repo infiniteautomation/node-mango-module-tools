@@ -22,6 +22,7 @@ const options = parseArguments(process.argv.slice(2), {
     fileTemplate: {defaultValue: fileTemplatePath, description: 'Path to Handlebars template file for test file'},
     testTemplate: {defaultValue: testTemplatePath, description: 'Path to Handlebars template file for test case'},
     fileName: {defaultValue: '{{basePath}}-{{tag.name}}.spec.js', description: 'Filename template to save test files as'},
+    directory: {defaultValue: '.', description: 'Directory to save test files in'},
     overwrite: {type: 'boolean', defaultValue: false, description: 'Set to true to overwrite test files'}
 });
 
@@ -42,7 +43,8 @@ login(client).then(user => {
         overwrite: options.overwrite,
         fileTemplate: options.fileTemplate,
         testTemplate: options.testTemplate,
-        fileName: options.fileName
+        fileName: options.fileName,
+        directory: options.directory
     });
 
     return generator.generateTests(options.tagNames, options.methods, options.matchPath);

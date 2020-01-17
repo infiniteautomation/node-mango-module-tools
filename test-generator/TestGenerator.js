@@ -16,6 +16,7 @@
  */
 
 const fs = require('fs');
+const path = require('path');
 const {dashCase, camelCase} = require('./util');
 const Handlebars = require('handlebars');
 
@@ -147,12 +148,6 @@ class TestGenerator {
         const tag = this.apiDocs.tags.find(t => t.name === tagName);
         if (!tag) throw new Error(`Tag name '${tagName}' not found in Swagger API documentation`);
 
-        const fileName = this.fileNameTemplate({
-            apiDocs: this.apiDocs,
-            tag,
-            basePath: dashCase(this.apiDocs.basePath, '/').slice(1)
-        });
-
         const paths = [];
         Object.entries(this.apiDocs.paths).forEach(([path, methods]) => {
             if (!pathMatch || pathMatch.test(this.apiDocs.basePath + path)) {
@@ -171,7 +166,15 @@ class TestGenerator {
             tag,
             paths
         });
-        fs.writeFileSync(fileName, fileResult, {flag: this.overwrite ? 'w' : 'wx'});
+
+        const fileName = this.fileNameTemplate({
+            apiDocs: this.apiDocs,
+            tag,
+            basePath: dashCase(this.apiDocs.basePath, '/').slice(1)
+        });
+
+        const filePath = path.resolve(this.directory, fileName);
+        fs.writeFileSync(filePath, fileResult, {flag: this.overwrite ? 'w' : 'wx'});
     }
 }
 
