@@ -1,0 +1,35 @@
+{
+  "private": false,
+  "name": "@infinite-automation/mango-module-tools",
+  "version": "1.4.0",
+  "description": "Tools used for building and testing Mango Automation modules",
+  "main": "module.config.js",
+  "dependencies": {
+    "@infinite-automation/mango-client": "^0.9.1",
+    "clean-webpack-plugin": "~0.1.19",
+    "copy-webpack-plugin": "~4.5.2",
+    "css-loader": "~1.0.0",
+    "file-loader": "~2.0.0",
+    "html-loader": "~0.5.5",
+    "lodash": "~4.17.11",
+    "raw-loader": "~0.5.1",
+    "style-loader": "~0.23.1",
+    "webpack": "~4.20.2",
+    "webpack-cli": "~3.1.2",
+    "xml2js": "~0.4.19",
+    "handlebars": "^4.7.2",
+    "mocha": ">=3.5 <6",
+    "mocha-jenkins-reporter": "^0.4.0",
+    "tmp": "~0.0.31"
+  },
+  "author": "Jared Wiltshire <jared@infiniteautomation.com>",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/infiniteautomation/node-mango-module-tools.git"
+  },
+  "bin": {
+    "update-package-json": "./module-tools/update-package-json.js",
+    "generate-tests": "./test-generator/generate-tests.js"
+  }
+}
