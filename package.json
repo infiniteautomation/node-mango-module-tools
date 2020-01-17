@@ -3,7 +3,7 @@
   "name": "@infinite-automation/mango-module-tools",
   "version": "2.0.0",
   "description": "Tools used for building and testing Mango Automation modules",
-  "main": "module.config.js",
+  "main": "./module-tools/module.config.js",
   "dependencies": {
     "@infinite-automation/mango-client": "~0.9.1",
     "chai": "~4.2.0",
