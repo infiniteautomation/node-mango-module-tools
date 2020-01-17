@@ -28,7 +28,7 @@ class TestGenerator {
         this.handlebars.registerHelper('eq', (a, b) => a === b);
         this.handlebars.registerHelper('dash_case', dashCase);
         this.handlebars.registerHelper('camel_case', camelCase);
-        this.handlebars.registerHelper('has_param_type', (parameters, type) => parameters.some(p => p.in === type));
+        this.handlebars.registerHelper('has_param_type', (parameters, type) => parameters && parameters.some(p => p.in === type));
         this.handlebars.registerHelper('json', (input, spaces) => JSON.stringify(input, null, spaces));
         this.handlebars.registerHelper('find_body_schema', (parameters) => parameters.find(p => p.in === 'body').schema);
         this.handlebars.registerHelper('find_success_response', (responses) => {
@@ -72,11 +72,13 @@ class TestGenerator {
         } else if (schema.type === 'object') {
             const lines = [];
             lines.push(`{ // ${schema.title}`);
-            Object.entries(schema.properties).forEach(([key, value], index, array) => {
-                const last = index === array.length - 1;
-                const comma = last ? '' : ',';
-                lines.push(`    ${key}: ${this.printSchema(value, spaces + 4)}${comma}`);
-            });
+            if (schema.properties) {
+                Object.entries(schema.properties).forEach(([key, value], index, array) => {
+                    const last = index === array.length - 1;
+                    const comma = last ? '' : ',';
+                    lines.push(`    ${key}: ${this.printSchema(value, spaces + 4)}${comma}`);
+                });
+            }
             lines.push('}');
             return lines.join(`\n${linePrefix}`);
         } else if (schema.type === 'array') {
@@ -113,6 +115,9 @@ class TestGenerator {
                     lines.push(this.printAssertions(value, `${dataPath}.${key}`, spaces));
                 });
             }
+            if (schema.title) {
+                lines.push(`// END ${schema.title}`);
+            }
             return lines.join(`\n${linePrefix}`);
         } else if (schema.type === 'array') {
             const lines = [];
@@ -141,9 +146,6 @@ class TestGenerator {
     generateTestsSingle(tagName, methodsArray, pathMatch) {
         const tag = this.apiDocs.tags.find(t => t.name === tagName);
         if (!tag) throw new Error(`Tag name '${tagName}' not found in Swagger API documentation`);
-
-        //const basePathName = this.apiDocs.basePath.replace(/\//g, '-').slice(1);
-        //const fileName = `${basePathName}-${tagName}.spec.js`;
 
         const fileName = this.fileNameTemplate({
             apiDocs: this.apiDocs,
