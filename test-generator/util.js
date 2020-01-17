@@ -92,6 +92,11 @@ const parseArguments = function(args, optionsInfo) {
         }
     });
 
+    if (options.help) {
+        printHelp(optionsInfo);
+        process.exit(0);
+    }
+
     Object.entries(optionsInfo).forEach(([name, info]) => {
         if (!options.hasOwnProperty(name)) {
             if (info.required) {
@@ -102,12 +107,7 @@ const parseArguments = function(args, optionsInfo) {
         }
     });
 
-    if (options.help) {
-        printHelp(optionsInfo);
-        process.exit(0);
-    }
-
     return options;
 };
 
-module.exports = {defer, merge, parseArguments, dashCase, camelCase};
+module.exports = {parseArguments, dashCase, camelCase};
