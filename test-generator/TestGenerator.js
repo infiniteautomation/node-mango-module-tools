@@ -67,76 +67,104 @@ class TestGenerator {
     }
 
     printSchema(schema, spaces = 0) {
-        const linePrefix = ''.padStart(spaces);
         if (schema.$ref) {
             return this.printSchema(this.getSchema(schema.$ref), spaces);
-        } else if (schema.type === 'object') {
-            const lines = [];
+        }
+
+        const linePrefix = ''.padStart(spaces);
+        const lines = [];
+
+        if (schema.type === 'object') {
             lines.push(`{ // ${schema.title}`);
             if (schema.properties) {
-                Object.entries(schema.properties).forEach(([key, value], index, array) => {
+                const required = new Set(schema.required || []);
+
+                Object.entries(schema.properties)
+                .filter(([key, value]) => !this.requiredPropertiesOnly || required.has(key))
+                .forEach(([key, value], index, array) => {
                     const last = index === array.length - 1;
                     const comma = last ? '' : ',';
                     lines.push(`    ${key}: ${this.printSchema(value, spaces + 4)}${comma}`);
                 });
             }
             lines.push('}');
-            return lines.join(`\n${linePrefix}`);
         } else if (schema.type === 'array') {
-            const lines = [];
             lines.push('[');
             lines.push('    ' + this.printSchema(schema.items, spaces + 4));
             lines.push(']');
-            return lines.join(`\n${linePrefix}`);
         } else if (schema.type === 'boolean') {
-            return 'false';
+            lines.push('false');
         } else if (schema.type === 'integer') {
-            return '0';
+            lines.push('0');
         } else if (schema.type === 'number') {
-            return '0.0';
+            lines.push('0.0');
         } else if (schema.type === 'string') {
-            return '\'string\'';
+            lines.push(Array.isArray(schema['enum']) ? `'${schema.enum[0]}'` : `'string'`);
         } else {
-            return `// UNKNOWN SCHEMA TYPE ${schema.type}`;
+            lines.push(`// UNKNOWN SCHEMA TYPE ${schema.type}`);
         }
+
+        return lines.join(`\n${linePrefix}`);
     }
 
     printAssertions(schema, dataPath = '', spaces = 0) {
-        const linePrefix = ''.padStart(spaces);
         if (schema.$ref) {
             return this.printAssertions(this.getSchema(schema.$ref), dataPath, spaces);
-        } else if (schema.type === 'object') {
-            const lines = [];
-            if (schema.title) {
-                lines.push(`// ${schema.title}`);
-            }
-            lines.push(`assert.isObject(${dataPath});`);
+        }
+
+        const linePrefix = ''.padStart(spaces);
+        const lines = [];
+        if (schema.title) {
+            lines.push(`// MODEL: ${schema.title}`);
+        }
+        if (schema.description) {
+            lines.push(`// DESCRIPTION: ${schema.description}`);
+        }
+
+//        const copy = Object.assign({}, schema);
+//        delete copy.items;
+//        delete copy.properties;
+//        lines.push(`// Schema: ${JSON.stringify(copy)}`);
+
+        if (schema.type === 'object') {
+            const required = new Set(schema.required || []);
+
+            lines.push(`assert.isObject(${dataPath}, '${dataPath}');`);
             if (schema.properties) {
                 Object.entries(schema.properties).forEach(([key, value]) => {
-                    lines.push(this.printAssertions(value, `${dataPath}.${key}`, spaces));
+                    if (!required.has(key)) {
+                        lines.push(`if (${dataPath}.hasOwnProperty('${key}')) {`);
+                        lines.push('    ' + this.printAssertions(value, `${dataPath}.${key}`, spaces + 4));
+                        lines.push('}');
+                    } else {
+                        lines.push(this.printAssertions(value, `${dataPath}.${key}`, spaces));
+                    }
                 });
             }
-            if (schema.title) {
-                lines.push(`// END ${schema.title}`);
-            }
-            return lines.join(`\n${linePrefix}`);
         } else if (schema.type === 'array') {
-            const lines = [];
-            lines.push(`assert.isArray(${dataPath});`);
-            lines.push(`assert.isAbove(${dataPath}.length, 0);`);
+            lines.push(`assert.isArray(${dataPath}, '${dataPath}');`);
+            lines.push(`assert.isAbove(${dataPath}.length, 0, '${dataPath}');`);
             if (schema.items) {
                 lines.push(this.printAssertions(schema.items, `${dataPath}[0]`, spaces));
             }
-            return lines.join(`\n${linePrefix}`);
         } else if (schema.type === 'boolean') {
-            return `assert.isBoolean(${dataPath});`;
+            lines.push(`assert.isBoolean(${dataPath}, '${dataPath}');`);
         } else if (schema.type === 'integer' || schema.type === 'number') {
-            return `assert.isNumber(${dataPath});`;
+            lines.push(`assert.isNumber(${dataPath}, '${dataPath}');`);
         } else if (schema.type === 'string') {
-            return `assert.isString(${dataPath});`;
+            lines.push(`assert.isString(${dataPath}, '${dataPath}');`);
+            if (Array.isArray(schema.enum)) {
+                lines.push(`assert.include(${JSON.stringify(schema.enum)}, ${dataPath}, '${dataPath}');`);
+            }
         } else {
-            return `// UNKNOWN SCHEMA TYPE ${schema.type}`;
+            lines.push(`// UNKNOWN SCHEMA TYPE ${schema.type}`);
         }
+
+        if (schema.title) {
+            lines.push(`// END MODEL: ${schema.title}`);
+        }
+
+        return lines.join(`\n${linePrefix}`);
     }
 
     generateTests(tagNames, methods, pathMatch) {

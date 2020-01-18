@@ -19,6 +19,7 @@ const options = parseArguments(process.argv.slice(2), {
     tagNames: {type: 'array', description: 'Tag names to generate test files for'},
     methods: {type: 'array', description: 'HTTP methods to include in test files'},
     matchPath: {type: 'regex', regexFlags: 'i', description: 'Only paths which match will be included in test files'},
+    requiredPropertiesOnly: {type: 'boolean', defaultValue: false, description: 'Only include required properties in generated models'},
     fileTemplate: {defaultValue: fileTemplatePath, description: 'Path to Handlebars template file for test file'},
     testTemplate: {defaultValue: testTemplatePath, description: 'Path to Handlebars template file for test case'},
     fileName: {defaultValue: '{{basePath}}-{{tag.name}}.spec.js', description: 'Filename template to save test files as'},
@@ -44,7 +45,8 @@ login(client).then(user => {
         fileTemplate: options.fileTemplate,
         testTemplate: options.testTemplate,
         fileName: options.fileName,
-        directory: options.directory
+        directory: options.directory,
+        requiredPropertiesOnly: options.requiredPropertiesOnly
     });
 
     return generator.generateTests(options.tagNames, options.methods, options.matchPath);
