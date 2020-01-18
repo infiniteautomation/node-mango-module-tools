@@ -100,7 +100,7 @@ const parseArguments = function(args, optionsInfo) {
     Object.entries(optionsInfo).forEach(([name, info]) => {
         if (!options.hasOwnProperty(name)) {
             if (info.required) {
-                throw new Error(`Option ${name} is required`);
+                throw new Error(`Option --${dashCase(name)} is required`);
             } else if (info.hasOwnProperty('defaultValue')) {
                 options[name] = info.defaultValue;
             }

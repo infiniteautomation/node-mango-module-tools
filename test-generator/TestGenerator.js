@@ -17,7 +17,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const {dashCase, camelCase} = require('./util');
+const {dashCase} = require('./util');
 const Handlebars = require('handlebars');
 
 class TestGenerator {
@@ -27,8 +27,8 @@ class TestGenerator {
         this.handlebars = Handlebars.create();
 
         this.handlebars.registerHelper('eq', (a, b) => a === b);
-        this.handlebars.registerHelper('dash_case', dashCase);
-        this.handlebars.registerHelper('camel_case', camelCase);
+        this.handlebars.registerHelper('join', (...args) => args.slice(0, -1).join(''));
+        this.handlebars.registerHelper('includes', (array, key) => Array.isArray(array) && array.includes(key));
         this.handlebars.registerHelper('has_param_type', (parameters, type) => parameters && parameters.some(p => p.in === type));
         this.handlebars.registerHelper('json', (input, spaces) => JSON.stringify(input, null, spaces));
         this.handlebars.registerHelper('find_body_schema', (parameters) => parameters.find(p => p.in === 'body').schema);
@@ -43,18 +43,16 @@ class TestGenerator {
             return this.printSchema(schema, options.loc.start.column);
         });
 
-        this.handlebars.registerHelper('print_assertions', (schema, dataPath, options) => {
-            return this.printAssertions(schema, dataPath, options.loc.start.column);
-        });
-
         this.handlebars.registerHelper('get_schema', (ref, options) => {
             return this.getSchema(ref);
         });
 
         const fileTemplate = fs.readFileSync(this.fileTemplate, 'utf-8');
         const testTemplate = fs.readFileSync(this.testTemplate, 'utf-8');
+        const assertTemplate = fs.readFileSync(this.assertTemplate, 'utf-8');
 
         this.handlebars.registerPartial('test', testTemplate);
+        this.handlebars.registerPartial('assert', assertTemplate);
         this.compiledTemplate = this.handlebars.compile(fileTemplate, {noEscape: true});
 
         this.fileNameTemplate = this.handlebars.compile(this.fileName, {noEscape: true, strict: true});
@@ -102,66 +100,6 @@ class TestGenerator {
             lines.push(Array.isArray(schema['enum']) ? `'${schema.enum[0]}'` : `'string'`);
         } else {
             lines.push(`// UNKNOWN SCHEMA TYPE ${schema.type}`);
-        }
-
-        return lines.join(`\n${linePrefix}`);
-    }
-
-    printAssertions(schema, dataPath = '', spaces = 0) {
-        if (schema.$ref) {
-            return this.printAssertions(this.getSchema(schema.$ref), dataPath, spaces);
-        }
-
-        const linePrefix = ''.padStart(spaces);
-        const lines = [];
-        if (schema.title) {
-            lines.push(`// MODEL: ${schema.title}`);
-        }
-        if (schema.description) {
-            lines.push(`// DESCRIPTION: ${schema.description}`);
-        }
-
-//        const copy = Object.assign({}, schema);
-//        delete copy.items;
-//        delete copy.properties;
-//        lines.push(`// Schema: ${JSON.stringify(copy)}`);
-
-        if (schema.type === 'object') {
-            const required = new Set(schema.required || []);
-
-            lines.push(`assert.isObject(${dataPath}, '${dataPath}');`);
-            if (schema.properties) {
-                Object.entries(schema.properties).forEach(([key, value]) => {
-                    if (!required.has(key)) {
-                        lines.push(`if (${dataPath}.hasOwnProperty('${key}')) {`);
-                        lines.push('    ' + this.printAssertions(value, `${dataPath}.${key}`, spaces + 4));
-                        lines.push('}');
-                    } else {
-                        lines.push(this.printAssertions(value, `${dataPath}.${key}`, spaces));
-                    }
-                });
-            }
-        } else if (schema.type === 'array') {
-            lines.push(`assert.isArray(${dataPath}, '${dataPath}');`);
-            lines.push(`assert.isAbove(${dataPath}.length, 0, '${dataPath}');`);
-            if (schema.items) {
-                lines.push(this.printAssertions(schema.items, `${dataPath}[0]`, spaces));
-            }
-        } else if (schema.type === 'boolean') {
-            lines.push(`assert.isBoolean(${dataPath}, '${dataPath}');`);
-        } else if (schema.type === 'integer' || schema.type === 'number') {
-            lines.push(`assert.isNumber(${dataPath}, '${dataPath}');`);
-        } else if (schema.type === 'string') {
-            lines.push(`assert.isString(${dataPath}, '${dataPath}');`);
-            if (Array.isArray(schema.enum)) {
-                lines.push(`assert.include(${JSON.stringify(schema.enum)}, ${dataPath}, '${dataPath}');`);
-            }
-        } else {
-            lines.push(`// UNKNOWN SCHEMA TYPE ${schema.type}`);
-        }
-
-        if (schema.title) {
-            lines.push(`// END MODEL: ${schema.title}`);
         }
 
         return lines.join(`\n${linePrefix}`);

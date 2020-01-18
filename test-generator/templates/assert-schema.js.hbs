@@ -1,0 +1,44 @@
+{{#if title}}
+// MODEL: {{title}}
+{{/if}}
+{{#if description}}
+// DESCRIPTION: {{description}}
+{{/if}}
+{{#if $ref}}
+{{>assert (get_schema $ref) data_path=data_path message=message}}
+{{else if (eq type "object")}}
+assert.isObject({{data_path}}, '{{message}}');
+{{#each properties}}
+{{#if (includes ../required @key)}}
+{{>assert . data_path=(join ../data_path "." @key) message=(join ../message "." @key)}}
+{{else}}
+if ({{../data_path}}.{{@key}} != null) {
+    {{>assert . data_path=(join ../data_path "." @key) message=(join ../message "." @key)}}
+}
+{{/if}}
+{{/each}}
+{{else if (eq type "array")}}
+assert.isArray({{data_path}}, '{{message}}');
+assert.isAbove({{data_path}}.length, 0, '{{message}}');
+{{#if items}}
+{{data_path}}.forEach((item, index) => {
+    {{>assert items data_path="item" message=(join message "[]")}}
+});
+{{/if}}
+{{else if (eq type "boolean")}}
+assert.isBoolean({{data_path}}, '{{message}}');
+{{else if (eq type "integer")}}
+assert.isNumber({{data_path}}, '{{message}}');
+{{else if (eq type "number")}}
+assert.isNumber({{data_path}}, '{{message}}');
+{{else if (eq type "string")}}
+assert.isString({{data_path}}, '{{message}}');
+{{#if enum}}
+assert.include({{json enum}}, {{data_path}}, '{{message}}');
+{{/if}}
+{{else}}
+// UNKNOWN SCHEMA TYPE {{type}}
+{{/if}}
+{{#if title}}
+// END MODEL: {{title}}
+{{/if}}

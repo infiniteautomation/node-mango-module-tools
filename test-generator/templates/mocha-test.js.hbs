@@ -24,7 +24,7 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         // {{description}}
         assert.strictEqual(response.status, {{statusCode}});
         {{#if schema}}
-        {{print_assertions schema "response.data"}}
+        {{>assert schema data_path="response.data" message="data"}}
         {{/if}}
         {{/with}}
     });
