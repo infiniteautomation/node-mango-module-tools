@@ -1,3 +1,6 @@
+{{#if (check_depth 10)}}
+// RECURSION DEPTH EXCEEDED
+{{else}}
 {{#if title}}
 // MODEL: {{title}}
 {{/if}}
@@ -41,4 +44,5 @@ assert.include({{json enum}}, {{data_path}}, '{{message}}');
 {{/if}}
 {{#if title}}
 // END MODEL: {{title}}
+{{/if}}
 {{/if}}

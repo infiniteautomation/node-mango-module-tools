@@ -26,6 +26,14 @@ class TestGenerator {
 
         this.handlebars = Handlebars.create();
 
+        this.handlebars.registerHelper('check_depth', (depth, options) => {
+            let count = 0;
+            for (let data = options.data; data != null; data = data._parent) {
+                count++;
+            }
+            return count >= depth;
+        });
+
         this.handlebars.registerHelper('eq', (a, b) => a === b);
         this.handlebars.registerHelper('join', (...args) => args.slice(0, -1).join(''));
         this.handlebars.registerHelper('includes', (array, key) => Array.isArray(array) && array.includes(key));
@@ -64,9 +72,13 @@ class TestGenerator {
         return this.apiDocs.definitions[defName];
     }
 
-    printSchema(schema, spaces = 0) {
+    printSchema(schema, spaces = 0, depth = 0) {
+        if (depth >= 20) {
+            return '// RECURSION DEPTH EXCEEDED ' + depth;
+        }
+
         if (schema.$ref) {
-            return this.printSchema(this.getSchema(schema.$ref), spaces);
+            return this.printSchema(this.getSchema(schema.$ref), spaces, depth + 1);
         }
 
         const linePrefix = ''.padStart(spaces);
@@ -82,13 +94,13 @@ class TestGenerator {
                 .forEach(([key, value], index, array) => {
                     const last = index === array.length - 1;
                     const comma = last ? '' : ',';
-                    lines.push(`    ${key}: ${this.printSchema(value, spaces + 4)}${comma}`);
+                    lines.push(`    ${key}: ${this.printSchema(value, spaces + 4, depth + 1)}${comma}`);
                 });
             }
             lines.push('}');
         } else if (schema.type === 'array') {
             lines.push('[');
-            lines.push('    ' + this.printSchema(schema.items, spaces + 4));
+            lines.push('    ' + this.printSchema(schema.items, spaces + 4, depth + 1));
             lines.push(']');
         } else if (schema.type === 'boolean') {
             lines.push('false');
