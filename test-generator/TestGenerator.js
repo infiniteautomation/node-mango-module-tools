@@ -74,6 +74,20 @@ class TestGenerator {
 
         this.handlebars.registerHelper('param_value', paramValue);
 
+        this.handlebars.registerHelper('get_path_params', path => {
+            const results = {};
+            const regex = /{(.+?)}/g;
+            let match;
+            while((match = regex.exec(path)) != null) {
+                results[match[1]] = 'uuid()';
+            }
+            return results
+        });
+
+        this.handlebars.registerHelper('replace_path_params', path => {
+            return path.replace(/{(.+?)}/g, '${$1}');
+        });
+
         const fileTemplate = fs.readFileSync(this.fileTemplate, 'utf-8');
         const testTemplate = fs.readFileSync(this.testTemplate, 'utf-8');
         const assertTemplate = fs.readFileSync(this.assertTemplate, 'utf-8');

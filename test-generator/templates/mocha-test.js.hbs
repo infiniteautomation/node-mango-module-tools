@@ -3,9 +3,16 @@
 // DEPRECATED
 {{/if}}
 it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
+    {{#each (get_path_params path.path)}}
+    const {{@key}} = {{.}};
+    {{/each}}
+    {{#if (has_param_type path.parameters "body")}}
+    const data =
+    {{print_schema (find_body_schema path.parameters)}};
+    {{/if}}
     return client.restRequest({
         method: '{{path.method}}',
-        path: '{{apiDocs.basePath}}{{path.path}}',
+        path: `{{apiDocs.basePath}}{{replace_path_params path.path}}`,
         {{#if (has_param_type path.parameters "query")}}
         params: {
             {{#each path.parameters}}
@@ -16,8 +23,7 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         }{{#if (has_param_type path.parameters "body")}},{{/if}}
         {{/if}}
         {{#if (has_param_type path.parameters "body")}}
-        data:
-        {{print_schema (find_body_schema path.parameters)}}
+        data
         {{/if}}
     }).then(response => {
         {{#with (find_success_response path.responses)}}
@@ -27,5 +33,5 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         {{>assert schema data_path="response.data" message="data"}}
         {{/if}}
         {{/with}}
-    });
+    }){{#if (eq path.method 'POST')}}.finally(() => client.restRequest({method: 'DELETE', path: `{{apiDocs.basePath}}{{replace_path_params path.path}}`})){{/if}};
 });
