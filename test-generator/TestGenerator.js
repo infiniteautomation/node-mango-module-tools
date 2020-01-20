@@ -55,17 +55,24 @@ class TestGenerator {
             return this.getSchema(ref);
         });
 
-        this.handlebars.registerHelper('param_value', (param) => {
-            if (param.hasOwnProperty('default')) return `'${param.default}'`;
-            if (Array.isArray(param.enum) && param.enum.length) return `'${param.enum[0]}'`;
+        const paramValue = function(param) {
+            if (param.hasOwnProperty('default')) {
+                return typeof param.default === 'string' ? `'${param.default}'` : param.default;
+            }
+            if (Array.isArray(param.enum) && param.enum.length) {
+                return `'${param.enum[0]}'`;
+            }
             switch(param.type) {
             case 'string': return `'string'`;
             case 'integer': return '0';
             case 'number': return '0.0';
             case 'boolean': return 'true';
+            case 'array': return param.items ? `[${paramValue(param.items)}]` : '[]';
             default: return 'undefined';
             }
-        });
+        };
+
+        this.handlebars.registerHelper('param_value', paramValue);
 
         const fileTemplate = fs.readFileSync(this.fileTemplate, 'utf-8');
         const testTemplate = fs.readFileSync(this.testTemplate, 'utf-8');
