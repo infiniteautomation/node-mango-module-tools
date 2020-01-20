@@ -12,13 +12,7 @@
 {{else if (eq type "object")}}
 assert.isObject({{data_path}}, '{{message}}');
 {{#each properties}}
-{{#if (includes ../required @key)}}
 {{>assert . data_path=(join ../data_path "." @key) message=(join ../message "." @key)}}
-{{else}}
-if ({{../data_path}}.{{@key}} != null) {
-    {{>assert . data_path=(join ../data_path "." @key) message=(join ../message "." @key)}}
-}
-{{/if}}
 {{/each}}
 {{else if (eq type "array")}}
 assert.isArray({{data_path}}, '{{message}}');

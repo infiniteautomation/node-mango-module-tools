@@ -86,18 +86,22 @@ class TestGenerator {
 
     printSchema(schema, spaces = 0, depth = 0) {
         if (depth >= 20) {
-            return '// RECURSION DEPTH EXCEEDED ' + depth;
+            return `// RECURSION DEPTH EXCEEDED ${depth}`;
         }
 
         if (schema.$ref) {
-            return this.printSchema(this.getSchema(schema.$ref), spaces, depth + 1);
+            const referencedSchema = this.getSchema(schema.$ref);
+            if (!referencedSchema) {
+                return `// UNKNOWN SCHEMA REF ${schema.$ref}`;
+            }
+            return this.printSchema(referencedSchema, spaces, depth + 1);
         }
 
         const linePrefix = ''.padStart(spaces);
         const lines = [];
 
         if (schema.type === 'object') {
-            lines.push(`{ // ${schema.title}`);
+            lines.push(`{ // title: ${schema.title}`);
             if (schema.properties) {
                 const required = new Set(schema.required || []);
 
