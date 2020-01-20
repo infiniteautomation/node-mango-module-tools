@@ -10,10 +10,10 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         params: {
             {{#each path.parameters}}
             {{#if (eq in "query")}}
-            {{name}}: {{param_value .}}{{#unless @last}},{{/unless}} // description = {{description}}, required = {{required}}, type = {{type}}, default = {{default}}, enum = {{enum}}
+            {{name}}: {{param_value .}}{{#unless @last}},{{/unless}} // description = {{description}}, required = {{required}}, type = {{type}}, default = {{default}}, enum = {{enum}}, {{json .}}
             {{/if}}
             {{/each}}
-        }
+        }{{#if (has_param_type path.parameters "body")}},{{/if}}
         {{/if}}
         {{#if (has_param_type path.parameters "body")}}
         data:
