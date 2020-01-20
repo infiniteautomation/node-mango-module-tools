@@ -55,6 +55,18 @@ class TestGenerator {
             return this.getSchema(ref);
         });
 
+        this.handlebars.registerHelper('param_value', (param) => {
+            if (param.hasOwnProperty('default')) return `'${param.default}'`;
+            if (Array.isArray(param.enum) && param.enum.length) return `'${param.enum[0]}'`;
+            switch(param.type) {
+            case 'string': return `'string'`;
+            case 'integer': return '0';
+            case 'number': return '0.0';
+            case 'boolean': return 'true';
+            default: return 'undefined';
+            }
+        });
+
         const fileTemplate = fs.readFileSync(this.fileTemplate, 'utf-8');
         const testTemplate = fs.readFileSync(this.testTemplate, 'utf-8');
         const assertTemplate = fs.readFileSync(this.assertTemplate, 'utf-8');
