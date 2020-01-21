@@ -16,7 +16,6 @@ assert.isObject({{data_path}}, '{{message}}');
 {{/each}}
 {{else if (eq type "array")}}
 assert.isArray({{data_path}}, '{{message}}');
-assert.isAbove({{data_path}}.length, 0, '{{message}}');
 {{#if items}}
 {{data_path}}.forEach((item, index) => {
     {{>assert items data_path="item" message=(join message "[]")}}
