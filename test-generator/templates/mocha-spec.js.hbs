@@ -15,13 +15,30 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, login, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
 // {{apiDocs.info.title}} - {{tag.description}}
 describe('{{tag.name}}', function() {
     before('Login', function() { return login.call(this, client); });
 
+    const testSetup = function() {
+        // common test setup, e.g. create a VO object
+        return client.restRequest({
+            method: 'POST',
+            path: '{{apiDocs.basePath}}{{paths.[0].path}}',
+            data: this.requestBody
+        });
+    };
+    
+    const testTeardown = function() {
+        // common test teardown, e.g. delete a VO object
+        return client.restRequest({
+            method: 'DELETE',
+            path: `{{apiDocs.basePath}}{{paths.[0].path}}/${this.params.xid}`,
+        });
+    };
+    
 {{#each paths}}
     {{>test .. path=.}}
 

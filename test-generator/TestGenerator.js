@@ -37,9 +37,12 @@ class TestGenerator {
         this.handlebars.registerHelper('eq', (a, b) => a === b);
         this.handlebars.registerHelper('join', (...args) => args.slice(0, -1).join(''));
         this.handlebars.registerHelper('includes', (array, key) => Array.isArray(array) && array.includes(key));
-        this.handlebars.registerHelper('has_param_type', (parameters, type) => parameters && parameters.some(p => p.in === type));
         this.handlebars.registerHelper('json', (input, spaces) => JSON.stringify(input, null, spaces));
+
         this.handlebars.registerHelper('find_body_schema', (parameters) => parameters.find(p => p.in === 'body').schema);
+        this.handlebars.registerHelper('has_param_type', (parameters, type) => parameters && parameters.some(p => p.in === type));
+        this.handlebars.registerHelper('filter_by_param_type', (parameters, type) => parameters && parameters.filter(p => p.in === type) || []);
+
         this.handlebars.registerHelper('find_success_response', (responses) => {
             return [200, 201].map(statusCode => {
                 const response = responses[statusCode];
@@ -61,6 +64,12 @@ class TestGenerator {
             }
             if (Array.isArray(param.enum) && param.enum.length) {
                 return `'${param.enum[0]}'`;
+            }
+            if (param.type === 'string' && param.name === 'xid') {
+                return 'uuid()';
+            }
+            if (param.in === 'body') {
+                return 'this.requestBody';
             }
             switch(param.type) {
             case 'string': return `'string'`;
@@ -85,7 +94,7 @@ class TestGenerator {
         });
 
         this.handlebars.registerHelper('replace_path_params', path => {
-            return path.replace(/{(.+?)}/g, '${$1}');
+            return path.replace(/{(.+?)}/g, '${this.params.$1}');
         });
 
         const fileTemplate = fs.readFileSync(this.fileTemplate, 'utf-8');

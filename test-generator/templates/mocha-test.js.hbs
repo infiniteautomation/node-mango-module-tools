@@ -3,28 +3,33 @@
 // DEPRECATED
 {{/if}}
 it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
-    {{#each (get_path_params path.path)}}
-    const {{@key}} = {{.}};
-    {{/each}}
     {{#if (has_param_type path.parameters "body")}}
-    const data =
+    this.requestBody =
     {{print_schema (find_body_schema path.parameters)}};
     {{/if}}
-    return client.restRequest({
-        method: '{{path.method}}',
-        path: `{{apiDocs.basePath}}{{replace_path_params path.path}}`,
-        {{#if (has_param_type path.parameters "query")}}
-        params: {
-            {{#each path.parameters}}
-            {{#if (eq in "query")}}
-            {{name}}: {{param_value .}}{{#unless @last}},{{/unless}} // description = {{description}}, required = {{required}}, type = {{type}}, default = {{default}}, enum = {{enum}}
+    this.params = {
+        {{#each path.parameters}}
+        {{name}}: {{param_value .}}{{#unless @last}},{{/unless}} // in = {{in}}, description = {{description}}, required = {{required}}, type = {{type}}, default = {{default}}, enum = {{enum}}
+        {{/each}}
+    };
+    
+    return Promise.resolve().then(() => {
+        return testSetup.call(this);
+    }).then(() => {
+        return client.restRequest({
+            method: '{{path.method}}',
+            path: `{{apiDocs.basePath}}{{replace_path_params path.path}}`,
+            {{#if (has_param_type path.parameters "query")}}
+            params: {
+                {{#each (filter_by_param_type path.parameters "query")}}
+                {{name}}: this.params.{{name}}{{#unless @last}},{{/unless}}
+                {{/each}}
+            }{{#if (has_param_type path.parameters "body")}},{{/if}}
             {{/if}}
-            {{/each}}
-        }{{#if (has_param_type path.parameters "body")}},{{/if}}
-        {{/if}}
-        {{#if (has_param_type path.parameters "body")}}
-        data
-        {{/if}}
+            {{#if (has_param_type path.parameters "body")}}
+            data: this.requestBody
+            {{/if}}
+        });
     }).then(response => {
         {{#with (find_success_response path.responses)}}
         // {{description}}
@@ -33,5 +38,7 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         {{>assert schema data_path="response.data" message="data"}}
         {{/if}}
         {{/with}}
-    }){{#if (eq path.method 'POST')}}.finally(() => client.restRequest({method: 'DELETE', path: `{{apiDocs.basePath}}{{replace_path_params path.path}}`})){{/if}};
+    }).finally(() => {
+        return testTeardown.call(this).catch(noop);
+    });
 });
