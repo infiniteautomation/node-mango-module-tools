@@ -22,20 +22,24 @@ const client = createClient();
 describe('{{tag.name}}', function() {
     before('Login', function() { return login.call(this, client); });
 
-    const testSetup = function() {
+    const testSetup = function(params, requestBody) {
         // common test setup, e.g. create a VO object
+        this.test.expectedResult = requestBody || {
+            xid: params.xid
+        };
+        
         return client.restRequest({
             method: 'POST',
             path: '{{apiDocs.basePath}}{{paths.[0].path}}',
-            data: this.requestBody
+            data: this.test.expectedResult
         });
     };
     
-    const testTeardown = function() {
+    const testTeardown = function(params) {
         // common test teardown, e.g. delete a VO object
         return client.restRequest({
             method: 'DELETE',
-            path: `{{apiDocs.basePath}}{{paths.[0].path}}/${this.params.xid}`,
+            path: `{{apiDocs.basePath}}{{paths.[0].path}}/${params.xid}`,
         });
     };
     

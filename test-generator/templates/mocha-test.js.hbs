@@ -4,17 +4,17 @@
 {{/if}}
 it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
     {{#if (has_param_type path.parameters "body")}}
-    this.requestBody =
+    const requestBody =
     {{print_schema (find_body_schema path.parameters)}};
     {{/if}}
-    this.params = {
+    const params = {
         {{#each path.parameters}}
         {{name}}: {{param_value .}}{{#unless @last}},{{/unless}} // in = {{in}}, description = {{description}}, required = {{required}}, type = {{type}}, default = {{default}}, enum = {{enum}}
         {{/each}}
     };
     
     return Promise.resolve().then(() => {
-        return testSetup.call(this);
+        return testSetup.call(this, params);
     }).then(() => {
         return client.restRequest({
             method: '{{path.method}}',
@@ -22,12 +22,12 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
             {{#if (has_param_type path.parameters "query")}}
             params: {
                 {{#each (filter_by_param_type path.parameters "query")}}
-                {{name}}: this.params.{{name}}{{#unless @last}},{{/unless}}
+                {{name}}: params.{{name}}{{#unless @last}},{{/unless}}
                 {{/each}}
             }{{#if (has_param_type path.parameters "body")}},{{/if}}
             {{/if}}
             {{#if (has_param_type path.parameters "body")}}
-            data: this.requestBody
+            data: requestBody
             {{/if}}
         });
     }).then(response => {
@@ -37,8 +37,11 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         {{#if schema}}
         {{>assert schema data_path="response.data" message="data"}}
         {{/if}}
+        if (response.data != null && this.test.expectedResult != null) {
+            assert.deepEqual(response.data, this.test.expectedResult);
+        }
         {{/with}}
     }).finally(() => {
-        return testTeardown.call(this).catch(noop);
+        return testTeardown.call(this, params).catch(noop);
     });
 });

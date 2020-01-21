@@ -69,7 +69,7 @@ class TestGenerator {
                 return 'uuid()';
             }
             if (param.in === 'body') {
-                return 'this.requestBody';
+                return 'requestBody';
             }
             switch(param.type) {
             case 'string': return `'string'`;
@@ -94,7 +94,7 @@ class TestGenerator {
         });
 
         this.handlebars.registerHelper('replace_path_params', path => {
-            return path.replace(/{(.+?)}/g, '${this.params.$1}');
+            return path.replace(/{(.+?)}/g, '${params.$1}');
         });
 
         const fileTemplate = fs.readFileSync(this.fileTemplate, 'utf-8');
