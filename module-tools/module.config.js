@@ -16,7 +16,7 @@
  */
 
 const path = require('path');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const {CleanWebpackPlugin} = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const readPom = require('./readPom');
 const updatePackage = require('./updatePackage');
@@ -89,9 +89,7 @@ module.exports = (configOptions = {}) => {
                 splitChunks: false
             },
             plugins: [
-                new CleanWebpackPlugin(['web/angular'], {
-                    root: moduleRoot
-                }),
+                new CleanWebpackPlugin(),
                 new CopyWebpackPlugin([{
                     context: 'web-src/static',
                     from: '**/*'
