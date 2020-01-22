@@ -27,7 +27,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/infiniteautomation/node-mango-module-tools.git"
+    "url": "https://github.com/infiniteautomation/mango-module-tools.git"
   },
   "bin": {
     "update-package-json": "./module-tools/update-package-json.js",
