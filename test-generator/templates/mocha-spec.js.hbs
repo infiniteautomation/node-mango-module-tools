@@ -21,27 +21,28 @@ const client = createClient();
 // {{apiDocs.info.title}} - {{tag.description}}
 describe('{{tag.name}}', function() {
     before('Login', function() { return login.call(this, client); });
-
-    const testSetup = function(params, requestBody) {
+    
+    beforeEach('Test setup', function() {
+        this.currentTest.xid = uuid();
         // common test setup, e.g. create a VO object
-        this.test.expectedResult = requestBody || {
-            xid: params.xid
+        this.currentTest.expectedResult = {
+            xid: this.currentTest.xid
         };
         
         return client.restRequest({
             method: 'POST',
             path: '{{apiDocs.basePath}}{{paths.[0].path}}',
-            data: this.test.expectedResult
+            data: this.currentTest.expectedResult
         });
-    };
+    });
     
-    const testTeardown = function(params) {
+    afterEach('Test teardown', function() {
         // common test teardown, e.g. delete a VO object
         return client.restRequest({
             method: 'DELETE',
-            path: `{{apiDocs.basePath}}{{paths.[0].path}}/${params.xid}`,
-        });
-    };
+            path: `{{apiDocs.basePath}}{{paths.[0].path}}/${this.currentTest.xid}`,
+        }).catch(noop);
+    });
     
 {{#each paths}}
     {{>test .. path=.}}

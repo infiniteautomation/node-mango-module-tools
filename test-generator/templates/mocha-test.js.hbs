@@ -13,23 +13,19 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         {{/each}}
     };
     
-    return Promise.resolve().then(() => {
-        return testSetup.call(this, params);
-    }).then(() => {
-        return client.restRequest({
-            method: '{{path.method}}',
-            path: `{{apiDocs.basePath}}{{replace_path_params path.path}}`,
-            {{#if (has_param_type path.parameters "query")}}
-            params: {
-                {{#each (filter_by_param_type path.parameters "query")}}
-                {{name}}: params.{{name}}{{#unless @last}},{{/unless}}
-                {{/each}}
-            }{{#if (has_param_type path.parameters "body")}},{{/if}}
-            {{/if}}
-            {{#if (has_param_type path.parameters "body")}}
-            data: requestBody
-            {{/if}}
-        });
+    return client.restRequest({
+        method: '{{path.method}}',
+        path: `{{apiDocs.basePath}}{{replace_path_params path.path}}`,
+        {{#if (has_param_type path.parameters "query")}}
+        params: {
+            {{#each (filter_by_param_type path.parameters "query")}}
+            {{name}}: params.{{name}}{{#unless @last}},{{/unless}}
+            {{/each}}
+        }{{#if (has_param_type path.parameters "body")}},{{/if}}
+        {{/if}}
+        {{#if (has_param_type path.parameters "body")}}
+        data: requestBody
+        {{/if}}
     }).then(response => {
         {{#with (find_success_response path.responses)}}
         // {{description}}
@@ -37,11 +33,6 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         {{#if schema}}
         {{>assert schema data_path="response.data" message="data"}}
         {{/if}}
-        if (response.data != null && this.test.expectedResult != null) {
-            assert.deepEqual(response.data, this.test.expectedResult);
-        }
         {{/with}}
-    }).finally(() => {
-        return testTeardown.call(this, params).catch(noop);
     });
 });

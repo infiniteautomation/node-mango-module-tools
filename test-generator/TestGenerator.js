@@ -66,7 +66,7 @@ class TestGenerator {
                 return `'${param.enum[0]}'`;
             }
             if (param.type === 'string' && param.name === 'xid') {
-                return 'uuid()';
+                return 'this.test.xid';
             }
             if (param.in === 'body') {
                 return 'requestBody';
