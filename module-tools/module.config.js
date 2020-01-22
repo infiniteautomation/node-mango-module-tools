@@ -49,8 +49,9 @@ module.exports = (configOptions = {}) => {
                             {
                                 loader: 'style-loader',
                                 options: {
-                                    insertAt: {
-                                        before: 'meta[name="user-styles-after-here"]'
+                                    insert: function(style) {
+                                        const meta = document.querySelector('meta[name="user-styles-after-here"]');
+                                        meta.parentNode.insertBefore(style, meta);
                                     }
                                 }
                             },
