@@ -16,9 +16,14 @@
  */
 
 const path = require('path');
-global.chai = require('chai');
+const chai = require('chai');
 const MangoClient = require('@infinite-automation/mango-client');
-const defer = require('@infinite-automation/mango-client/src/util').defer;
+const {defer} = require('@infinite-automation/mango-client/src/util');
+
+// assign chai methods to global
+global.chai = chai;
+global.assert = chai.assert;
+global.expect = chai.expect;
 
 const config = {
     username: 'admin',
@@ -32,16 +37,6 @@ try {
     Object.assign(config, configFileOptions);
 } catch (e) {
 }
-
-global.assert = chai.assert;
-global.expect = chai.expect;
-
-global.client = new MangoClient(config);
-global.DataSource = client.DataSource;
-global.DataPoint = client.DataPoint;
-global.User = client.User;
-global.pointValues = client.pointValues;
-global.SystemSetting = client.SystemSetting;
 
 config.login = function() {
     this.timeout(config.loginRetries * config.loginRetryDelay + 5000);
