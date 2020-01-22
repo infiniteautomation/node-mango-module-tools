@@ -6,10 +6,12 @@
   "main": "",
   "dependencies": {},
   "devDependencies": {
-    "@infinite-automation/mango-module-tools": "^1.4.0"
+    "@infinite-automation/mango-module-tools": "^2.0.3"
   },
   "scripts": {
-    "webpack": "webpack --config webpack.config.js"
+    "webpack": "webpack --config webpack.config.js --mode production",
+    "webpack-dev": "webpack --config webpack.config.js --mode development",
+    "webpack-watch": "webpack --config webpack.config.js --mode development --watch"
   },
   "author": "Jared Wiltshire <jared@infiniteautomation.com>",
   "license": "UNLICENSED",
