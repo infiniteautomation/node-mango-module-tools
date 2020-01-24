@@ -39,22 +39,6 @@ try {
 } catch (e) {
 }
 
-const itWithData = function(title, data, testFn) {
-    const test = it(title, testFn);
-    test.data = data;
-    return test;
-};
-itWithData.skip = function() {
-    const test = it.skip(title, testFn);
-    test.data = data;
-    return test;
-};
-itWithData.only = function() {
-    const test = it.only(title, testFn);
-    test.data = data;
-    return test;
-};
-
 const testHelper = Object.freeze({
     delay(time) {
         return new Promise((resolve) => {
@@ -82,7 +66,6 @@ const testHelper = Object.freeze({
         });
     },
 
-    itWithData,
     defer,
     defaultConfig,
     config,

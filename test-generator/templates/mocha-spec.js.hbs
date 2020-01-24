@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, login, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, addLoginHook, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
 const validateSchema = {
@@ -28,32 +28,44 @@ const validateSchema = {
 
 // {{apiDocs.info.title}} - {{tag.description}}
 describe('{{tag.name}}', function() {
-    before('Login', function() { return login.call(this, client); });
+    addLoginHook(client);
 
-    const noCreate = [];
+    beforeEach('Create object', function() {
+        if (!this.currentTest.hasOwnProperty('createObject')) {
+            this.currentTest.createObject = {
+                // your default object here
+            };
+        }
 
-    beforeEach('Test setup', function() {
-        this.currentTest.xid = uuid();
-        // common test setup, e.g. create a VO object
-        this.currentTest.expectedResult = {
-            xid: this.currentTest.xid
-        };
-
-        if (!noCreate.includes(this.currentTest)) {
+        if (this.currentTest.createObject) {
+            this.currentTest.expectedResult = this.currentTest.createObject;
+            
             return client.restRequest({
                 method: 'POST',
                 path: '{{apiDocs.basePath}}{{paths.[0].path}}',
-                data: this.currentTest.expectedResult
+                data: this.currentTest.createObject
+            }).then((response) => {
+                this.currentTest.savedObject = response.data;
+                this.currentTest.xid = response.data.xid;
             });
         }
     });
 
-    afterEach('Test teardown', function() {
-        // common test teardown, e.g. delete a VO object
-        return client.restRequest({
-            method: 'DELETE',
-            path: `{{apiDocs.basePath}}{{paths.[0].path}}/${this.currentTest.xid}`,
-        }).catch(noop);
+    afterEach('Verify expected result', function() {
+        if (this.currentTest.expectedResult && this.currentTest.actualResult) {
+            for (let [key, value] of Object.entries(this.currentTest.expectedResult)) {
+                assert.deepEqual(this.currentTest.actualResult[key], value);
+            }
+        }
+    });
+
+    afterEach('Delete object', function() {
+        if (this.currentTest.xid) {
+            return client.restRequest({
+                method: 'DELETE',
+                path: `{{apiDocs.basePath}}{{paths.[0].path}}/${this.currentTest.xid}`,
+            }).catch(noop);
+        }
     });
 
 {{#each paths}}
