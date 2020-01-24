@@ -1,41 +1,35 @@
-{{#if (check_depth 10)}}
-// RECURSION DEPTH EXCEEDED
+{{#if (and use_validate title)}}
+{{validate_object}}['{{title}}']({{data_path}}, {{message}});
 {{else}}
-{{#if title}}
-// MODEL: {{title}}
-{{/if}}
 {{#if description}}
 // DESCRIPTION: {{description}}
 {{/if}}
 {{#if $ref}}
-{{>assert (get_schema $ref) data_path=data_path message=message}}
+{{>assert (get_schema $ref) use_validate=use_validate validate_object=validate_object data_path=data_path message=message}}
 {{else if (eq type "object")}}
-assert.isObject({{data_path}}, '{{message}}');
+assert.isObject({{data_path}}, {{message}});
 {{#each properties}}
-{{>assert . data_path=(join ../data_path "." @key) message=(join ../message "." @key)}}
+{{>assert . use_validate=true validate_object=../validate_object data_path=(join ../data_path "." @key) message=(join ../message " + '." @key "'")}}
 {{/each}}
 {{else if (eq type "array")}}
-assert.isArray({{data_path}}, '{{message}}');
+assert.isArray({{data_path}}, {{message}});
 {{#if items}}
 {{data_path}}.forEach((item, index) => {
-    {{>assert items data_path="item" message=(join message "[]")}}
+    {{>assert items use_validate=true validate_object=validate_object data_path="item" message=(join message " + `[${index}]`")}}
 });
 {{/if}}
 {{else if (eq type "boolean")}}
-assert.isBoolean({{data_path}}, '{{message}}');
+assert.isBoolean({{data_path}}, {{message}});
 {{else if (eq type "integer")}}
-assert.isNumber({{data_path}}, '{{message}}');
+assert.isNumber({{data_path}}, {{message}});
 {{else if (eq type "number")}}
-assert.isNumber({{data_path}}, '{{message}}');
+assert.isNumber({{data_path}}, {{message}});
 {{else if (eq type "string")}}
-assert.isString({{data_path}}, '{{message}}');
+assert.isString({{data_path}}, {{message}});
 {{#if enum}}
-assert.include({{json enum}}, {{data_path}}, '{{message}}');
+assert.include({{json enum}}, {{data_path}}, {{message}});
 {{/if}}
 {{else}}
 // UNKNOWN SCHEMA TYPE {{type}}
-{{/if}}
-{{#if title}}
-// END MODEL: {{title}}
 {{/if}}
 {{/if}}

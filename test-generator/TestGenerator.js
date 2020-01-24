@@ -26,17 +26,10 @@ class TestGenerator {
 
         this.handlebars = Handlebars.create();
 
-        this.handlebars.registerHelper('check_depth', (depth, options) => {
-            let count = 0;
-            for (let data = options.data; data != null; data = data._parent) {
-                count++;
-            }
-            return count >= depth;
-        });
-
         this.handlebars.registerHelper('eq', (a, b) => a === b);
+        this.handlebars.registerHelper('or', (...args) => args.slice(0, -1).some(a => a));
+        this.handlebars.registerHelper('and', (...args) => args.slice(0, -1).every(a => a));
         this.handlebars.registerHelper('join', (...args) => args.slice(0, -1).join(''));
-        this.handlebars.registerHelper('includes', (array, key) => Array.isArray(array) && array.includes(key));
         this.handlebars.registerHelper('json', (input, spaces) => JSON.stringify(input, null, spaces));
 
         this.handlebars.registerHelper('find_body_schema', (parameters) => parameters.find(p => p.in === 'body').schema);
@@ -44,9 +37,10 @@ class TestGenerator {
         this.handlebars.registerHelper('filter_by_param_type', (parameters, type) => parameters && parameters.filter(p => p.in === type) || []);
 
         this.handlebars.registerHelper('find_success_response', (responses) => {
-            return [200, 201].map(statusCode => {
-                const response = responses[statusCode];
-                return response && Object.assign({statusCode}, response);
+            return Object.entries(responses || {}).map(([status, response]) => {
+                return Object.assign({status}, response);
+            }).filter(response => {
+                return response.status >= 200 && response.status < 300;
             }).find(r => !!r);
         });
 
@@ -56,6 +50,10 @@ class TestGenerator {
 
         this.handlebars.registerHelper('get_schema', (ref, options) => {
             return this.getSchema(ref);
+        });
+
+        this.handlebars.registerHelper('schemas_for_paths', (paths) => {
+            return this.schemasForPaths(paths);
         });
 
         const paramValue = function(param) {
@@ -112,6 +110,43 @@ class TestGenerator {
         const matches = /^#\/definitions\/(.*)$/.exec(ref);
         const defName = matches && matches[1];
         return this.apiDocs.definitions[defName];
+    }
+
+    getAllSchemas(schema, schemas = new Set()) {
+        if (schema.$ref) {
+            schema = this.getSchema(schema.$ref);
+        }
+        if (schemas.has(schema)) {
+            return schemas;
+        }
+        if (schema.type === 'object') {
+            if (schema.title) {
+                schemas.add(schema);
+            }
+            if (schema.properties) {
+                Object.values(schema.properties).forEach(propertySchema => {
+                    this.getAllSchemas(propertySchema, schemas);
+                });
+            }
+        } else if (schema.type === 'array') {
+            if (schema.items) {
+                this.getAllSchemas(schema.items, schemas);
+            }
+        }
+        return schemas;
+    }
+
+    schemasForPaths(paths) {
+        const schemas = paths.reduce((responses, path) => {
+            return responses.concat(Object.values(path.responses));
+        }, []).reduce((schemas, response) => {
+            if (response.schema) {
+                this.getAllSchemas(response.schema, schemas);
+            }
+            return schemas;
+        }, new Set());
+
+        return Array.from(schemas);
     }
 
     printSchema(schema, spaces = 0, depth = 0) {

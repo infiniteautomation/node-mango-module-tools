@@ -29,9 +29,9 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
     }).then(response => {
         {{#with (find_success_response path.responses)}}
         // {{description}}
-        assert.strictEqual(response.status, {{statusCode}});
+        assert.strictEqual(response.status, {{status}});
         {{#if schema}}
-        {{>assert schema data_path="response.data" message="data"}}
+        {{>assert schema use_validate=true validate_object="validateSchema" data_path="response.data" message="'data'"}}
         {{/if}}
         {{/with}}
     });

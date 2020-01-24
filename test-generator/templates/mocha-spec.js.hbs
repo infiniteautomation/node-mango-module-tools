@@ -18,6 +18,14 @@
 const {createClient, login, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
+const validateSchema = {
+{{#each (schemas_for_paths paths)}}
+    '{{title}}': function(item, path) {
+        {{>assert . use_validate=false validate_object="this" data_path="item" message="path"}}
+    }{{#unless @last}},{{/unless}}
+{{/each}}
+};
+
 // {{apiDocs.info.title}} - {{tag.description}}
 describe('{{tag.name}}', function() {
     before('Login', function() { return login.call(this, client); });
