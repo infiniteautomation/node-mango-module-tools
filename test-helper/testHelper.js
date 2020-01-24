@@ -66,6 +66,12 @@ const testHelper = Object.freeze({
         });
     },
 
+    assertPropertiesDeepEqual(actual, expected, message) {
+        for (let [key, value] of Object.entries(expected)) {
+            assert.deepEqual(actual[key], value, `${message}.${key}`);
+        }
+    },
+
     defer,
     defaultConfig,
     config,

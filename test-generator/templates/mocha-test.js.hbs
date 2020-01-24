@@ -34,8 +34,11 @@ it('{{path.method}} {{apiDocs.basePath}}{{path.path}}', function() {
         {{>assert schema use_validate=true validate_object="validateSchema" data_path="response.data" message="'data'"}}
         {{/if}}
         
-        // actualResult is verified against expectedResult in afterEach hook
-        this.test.actualResult = response.data;
+        {{#if (has_param_type path.parameters "body")}}
+        assertPropertiesDeepEqual(response.data, requestBody, 'data');
+        {{else}}
+        assertPropertiesDeepEqual(response.data, this.test.createObject, 'data');
+        {{/if}}
         {{/with}}
     });
 });

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-const {createClient, addLoginHook, uuid, noop} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
+const {createClient, addLoginHook, assertPropertiesDeepEqual, uuid} = require('@infinite-automation/mango-module-tools/test-helper/testHelper');
 const client = createClient();
 
 const validateSchema = {
@@ -38,8 +38,6 @@ describe('{{tag.name}}', function() {
         }
 
         if (this.currentTest.createObject) {
-            this.currentTest.expectedResult = this.currentTest.createObject;
-            
             return client.restRequest({
                 method: 'POST',
                 path: '{{apiDocs.basePath}}{{paths.[0].path}}',
@@ -51,20 +49,12 @@ describe('{{tag.name}}', function() {
         }
     });
 
-    afterEach('Verify expected result', function() {
-        if (this.currentTest.expectedResult && this.currentTest.actualResult) {
-            for (let [key, value] of Object.entries(this.currentTest.expectedResult)) {
-                assert.deepEqual(this.currentTest.actualResult[key], value);
-            }
-        }
-    });
-
     afterEach('Delete object', function() {
         if (this.currentTest.xid) {
             return client.restRequest({
                 method: 'DELETE',
                 path: `{{apiDocs.basePath}}{{paths.[0].path}}/${this.currentTest.xid}`,
-            }).catch(noop);
+            });
         }
     });
 
