@@ -32,5 +32,8 @@
   "bin": {
     "update-package-json": "./module-tools/update-package-json.js",
     "generate-tests": "./test-generator/generate-tests.js"
+  },
+  "resolutions": {
+    "mocha-jenkins-reporter/mocha": "^7.0.0"
   }
 }
