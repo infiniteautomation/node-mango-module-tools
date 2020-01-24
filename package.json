@@ -11,7 +11,6 @@
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.4.2",
     "file-loader": "^5.0.2",
-    "glob": "^7.1.6",
     "handlebars": "^4.7.2",
     "html-loader": "^0.5.5",
     "lodash": "^4.17.11",
@@ -32,7 +31,6 @@
   },
   "bin": {
     "update-package-json": "./module-tools/update-package-json.js",
-    "run-in-dirs": "./module-tools/run-in-dirs.js",
     "generate-tests": "./test-generator/generate-tests.js"
   }
 }
