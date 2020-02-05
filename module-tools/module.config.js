@@ -90,7 +90,9 @@ module.exports = (configOptions = {}) => {
                 splitChunks: false
             },
             plugins: [
-                new CleanWebpackPlugin(),
+                new CleanWebpackPlugin({
+                    cleanStaleWebpackAssets: false
+                }),
                 new CopyWebpackPlugin([{
                     context: 'web-src/static',
                     from: '**/*'
