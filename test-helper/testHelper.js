@@ -15,11 +15,25 @@
  * limitations under the License.
  */
 
+const Mocha = require('mocha');
 const path = require('path');
 const chai = require('chai');
 const MangoClient = require('@infinite-automation/mango-client');
 const defer = require('@infinite-automation/mango-client/src/util').defer;
 const uuid = require('uuid/v4');
+
+// Monkey patch the Mocha Runner to add the response data into the Error message
+const fail = Mocha.Runner.prototype.fail;
+Mocha.Runner.prototype.fail = function(test, err) {
+    if (err.hasOwnProperty('status') && err.hasOwnProperty('data')) {
+        const responseData = JSON.stringify(err.data, null, 4)
+            .split('\n')
+            .map(l => ''.padStart(6) + l)
+            .join('\n');
+        err.message += ' \u2014 Response data:\n' + responseData;
+    }
+    return fail.apply(this, arguments);
+};
 
 global.chai = chai;
 global.assert = chai.assert;
