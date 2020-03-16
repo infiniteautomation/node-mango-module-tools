@@ -65,7 +65,8 @@ module.exports = (configOptions = {}) => {
                         use: [{
                             loader: 'file-loader',
                             options: {
-                                name: 'images/[name].[ext]?v=[hash]'
+                                name: 'images/[name].[ext]?v=[hash]',
+                                esModule: false
                             }
                         }]
                     },
@@ -74,7 +75,8 @@ module.exports = (configOptions = {}) => {
                         use: [{
                             loader: 'file-loader',
                             options: {
-                                name: 'fonts/[name].[ext]?v=[hash]'
+                                name: 'fonts/[name].[ext]?v=[hash]',
+                                esModule: false
                             }
                         }]
                     },
