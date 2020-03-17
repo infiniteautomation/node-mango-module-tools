@@ -126,7 +126,15 @@ module.exports = (configOptions = {}) => {
                 'plotly.js': 'plotly.js',
                 'stacktrace-js': 'stacktrace-js',
                 'tinycolor2': 'tinycolor2',
-                'xlsx': 'xlsx'
+                'xlsx': 'xlsx',
+                'amcharts/amcharts': 'amcharts/amcharts',
+                'amcharts/funnel': 'amcharts/funnel',
+                'amcharts/gantt': 'amcharts/gantt',
+                'amcharts/gauge': 'amcharts/gauge',
+                'amcharts/pie': 'amcharts/pie',
+                'amcharts/radar': 'amcharts/radar',
+                'amcharts/serial': 'amcharts/serial',
+                'amcharts/xy': 'amcharts/xy'
             }
         };
 
