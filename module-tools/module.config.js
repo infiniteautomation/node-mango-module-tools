@@ -52,7 +52,8 @@ module.exports = (configOptions = {}) => {
                                     insert: function(style) {
                                         const meta = document.querySelector('meta[name="user-styles-after-here"]');
                                         meta.parentNode.insertBefore(style, meta);
-                                    }
+                                    },
+                                    injectType: 'singletonStyleTag'
                                 }
                             },
                             {
