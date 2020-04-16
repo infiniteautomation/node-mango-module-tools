@@ -167,8 +167,8 @@ const testHelper = Object.freeze({
         assert.strictEqual(saved.dataSourceXid, local.dataSourceXid);
         assert.strictEqual(saved.useIntegralUnit, local.useIntegralUnit);
         assert.strictEqual(saved.useRenderedUnit, local.useRenderedUnit);
-        this.assertPermissions(this.safeSplitPermission(saved.readPermission), this.safeSplitPermission(local.readPermission));
-        this.assertPermissions(this.safeSplitPermission(saved.setPermission), this.safeSplitPermission(local.setPermission));
+        this.assertPermissions(saved.readPermission, local.readPermission);
+        this.assertPermissions(saved.setPermission, local.setPermission);
         assert.strictEqual(saved.chartColour, local.chartColour);
         assert.strictEqual(saved.rollup, local.rollup);
         assert.strictEqual(saved.plotType, local.plotType);
@@ -250,7 +250,11 @@ const testHelper = Object.freeze({
 
     assertPermissions(actual, expected) {
         if (typeof expected === 'string') {
-            expected = expected.split(/\s*,\s*/).map(r => r.trim());
+            if(expected === ''){
+                expected = [];
+            }else{
+                expected = expected.split(/\s*,\s*/).map(r => r.trim());
+            }
         }
         assert.isArray(actual);
         assert.strictEqual(actual.length, expected.length);
