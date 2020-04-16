@@ -1,18 +1,18 @@
 /**
  * Copyright 2020 Infinite Automation Systems Inc.
  * http://infiniteautomation.com/
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 const Mocha = require('mocha');
@@ -248,18 +248,20 @@ const testHelper = Object.freeze({
         }
     },
 
-    assertPermissions(saved, stored) {
-        assert.strictEqual(saved.length, stored.length);
-        for(var i=0; i<stored.length; i++){
-            assert.include(saved, stored[i], stored[i] + ' was not found in permissions');
+    assertPermissions(actual, expected) {
+        if (typeof expected === 'string') {
+            expected = expected.split(/\s*,\s*/).map(r => r.trim());
         }
-    },
-
-    safeSplitPermission(permissionString) {
-        if(permissionString != null) {
-            return permissionString.split(',');
-        }else{
-            return [];
+        assert.isArray(actual);
+        assert.strictEqual(actual.length, expected.length);
+        const toSet = array => {
+            return new Set(array.map(t => typeof t === 'string' ? t : t.sort().join(',')));
+        };
+        const actualTerms = toSet(actual);
+        const expectedTerms = toSet(expected);
+        assert.strictEqual(actualTerms.size, expectedTerms.size);
+        for (const term of expectedTerms) {
+            assert(actualTerms.has(term), `Expected ${actual} to have term ${term}`);
         }
     }
 });
