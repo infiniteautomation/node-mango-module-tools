@@ -5,7 +5,7 @@
   "description": "Tools used for building and testing Mango Automation modules",
   "main": "./module-tools/module.config.js",
   "dependencies": {
-    "@infinite-automation/mango-client": "^1.0.0",
+    "@infinite-automation/mango-client": "^1.2.0",
     "chai": "^4.2.0",
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
