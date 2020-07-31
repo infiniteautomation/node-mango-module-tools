@@ -4,7 +4,7 @@
  */
 
 const loaderUtils = require('loader-utils');
-const ptr = require('json-ptr');
+const {JsonPointer} = require('json-ptr');
 
 const defaultOptions = {
     parse: content => JSON.parse(content),
@@ -52,7 +52,7 @@ const jsonUrlLoader = function(content, map, meta) {
     const targets = typeof options.targets === 'function' ? options.targets(parsed) : options.targets;
     
     const promises = targets.map(p => {
-        const pointer = ptr.create(p);
+        const pointer = JsonPointer.create(p);
         const value = pointer.get(parsed);
         if (loaderUtils.isUrlRequest(value)) {
             return transformUrl.call(this, value).then(newValue => {
